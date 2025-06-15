@@ -19,9 +19,18 @@ def search_exact_cve_id(cve_id: str, intent: str, milvus_client: MilvusClient):
 
     # 1. Try exact match with CVE ID if provided
     if cve_id:
-        exact_match = milvus_client.query(collection_name=consts.MILVUS_COLLECTION_NAME, filter=f'cve_id == "{cve_id}"',
-                                          output_fields=["cve_id", "cve_description", "cve_published_date",
-                                                         "cve_severity", "cve_cwe", "cve_references"])
+        exact_match = milvus_client.query(
+            collection_name=consts.MILVUS_COLLECTION_NAME,
+            filter=f'cve_id == "{cve_id}"',
+            output_fields=[
+                "cve_id",
+                "cve_description",
+                "cve_published_date",
+                "cve_severity",
+                "cve_cwe",
+                "cve_references",
+            ],
+        )
         if exact_match:
             results.extend(exact_match)
 
@@ -36,8 +45,14 @@ def search_exact_cve_id(cve_id: str, intent: str, milvus_client: MilvusClient):
         return results, cve_id, intent, prompts
 
 
-def search_vector_embedding(query_text: str, milvus_client: MilvusClient, groq_client: Groq, top_k: int = 10,
-                            severity_filter: str = None, cwe_filter: str = None, ):
+def search_vector_embedding(
+    query_text: str,
+    milvus_client: MilvusClient,
+    groq_client: Groq,
+    top_k: int = 10,
+    severity_filter: str = None,
+    cwe_filter: str = None,
+):
     query_info = extract_info_via_llm(query=query_text, llm_client=groq_client)
 
     intent = query_info.get("intent", "general")
@@ -52,11 +67,22 @@ def search_vector_embedding(query_text: str, milvus_client: MilvusClient, groq_c
     expr = " and ".join(filters) if filters else None
 
     query_embedding = get_embedding(query_text)
-    vector_results = milvus_client.search(collection_name=consts.MILVUS_COLLECTION_NAME, data=[query_embedding],
-                                          anns_field="cve_embedding", limit=top_k, filter=expr,
-                                          search_params={"metric_type": "COSINE", "params": {"nprobe": 10}},
-                                          output_fields=["cve_id", "cve_description", "cve_published_date",
-                                                         "cve_severity", "cve_cwe", "cve_references"], )
+    vector_results = milvus_client.search(
+        collection_name=consts.MILVUS_COLLECTION_NAME,
+        data=[query_embedding],
+        anns_field="cve_embedding",
+        limit=top_k,
+        filter=expr,
+        search_params={"metric_type": "COSINE", "params": {"nprobe": 10}},
+        output_fields=[
+            "cve_id",
+            "cve_description",
+            "cve_published_date",
+            "cve_severity",
+            "cve_cwe",
+            "cve_references",
+        ],
+    )
     results.extend(vector_results[0])
 
     if not results:

@@ -16,12 +16,20 @@ def extract_fields(item) -> dict:
     problemtype_data = cve.get("problemtype", {}).get("problemtype_data", [])
 
     # Extract description in English
-    cve_description = next((_["value"] for _ in description_data if _["lang"] == "en"), "")
+    cve_description = next(
+        (_["value"] for _ in description_data if _["lang"] == "en"), ""
+    )
 
     # Extract CWE
     cwe = next(
-        (d.get("value", "") for pt in problemtype_data for d in pt.get("description", []) if d.get("lang") == "en"),
-        "CWE-UNKNOWN", )
+        (
+            d.get("value", "")
+            for pt in problemtype_data
+            for d in pt.get("description", [])
+            if d.get("lang") == "en"
+        ),
+        "CWE-UNKNOWN",
+    )
 
     # Extract unique references (deduplicated)
     references = list({ref["url"] for ref in references_data})
@@ -37,13 +45,23 @@ def extract_fields(item) -> dict:
     text_to_embed = f"{meta.get('ID', '')} - {cve_description} - CWE: {cwe}"
 
     # Return all original keys + the embedding text and embedding vector
-    return {"cve_id": meta.get("ID", ""), "cve_assigned": meta.get("ASSIGNER", ""), "cve_description": cve_description,
-            "cve_published_date": item.get("publishedDate", ""), "cve_impact_score": cvss_score,
-            "cve_severity": severity, "cve_cwe": cwe, "cve_references": references, "text_to_embed": text_to_embed,
-            "cve_embedding": model.encode(text_to_embed).tolist(), }
+    return {
+        "cve_id": meta.get("ID", ""),
+        "cve_assigned": meta.get("ASSIGNER", ""),
+        "cve_description": cve_description,
+        "cve_published_date": item.get("publishedDate", ""),
+        "cve_impact_score": cvss_score,
+        "cve_severity": severity,
+        "cve_cwe": cwe,
+        "cve_references": references,
+        "text_to_embed": text_to_embed,
+        "cve_embedding": model.encode(text_to_embed).tolist(),
+    }
 
 
-def process_all_cves_in_batches(file_path: str, batch_size: int = consts.SENTENCE_ENCODER_BATCH_SIZE) -> List[dict]:
+def process_all_cves_in_batches(
+    file_path: str, batch_size: int = consts.SENTENCE_ENCODER_BATCH_SIZE
+) -> List[dict]:
     with open(file_path, "r") as f:
         data = json.load(f)
 
@@ -52,7 +70,7 @@ def process_all_cves_in_batches(file_path: str, batch_size: int = consts.SENTENC
 
     # Process in batches
     for i in range(0, len(all_cve_items), batch_size):
-        batch_items = all_cve_items[i: i + batch_size]
+        batch_items = all_cve_items[i : i + batch_size]
         batch_records = [extract_fields(item) for item in batch_items]
 
         # Extract texts for batch embedding
@@ -67,6 +85,8 @@ def process_all_cves_in_batches(file_path: str, batch_size: int = consts.SENTENC
             rec.pop("text_to_embed", None)
             enriched_records.append(rec)
 
-        print(f"Processed batch {i // batch_size + 1} / {(len(all_cve_items) + batch_size - 1) // batch_size}")
+        print(
+            f"Processed batch {i // batch_size + 1} / {(len(all_cve_items) + batch_size - 1) // batch_size}"
+        )
 
     return enriched_records

@@ -15,10 +15,15 @@ def insert_data_into_db(client, data):
     for i, item in enumerate(data):
         if len(item["cve_embedding"]) != expected_dim:
             raise ValueError(
-                f"Embedding dimension mismatch at index {i}: expected {expected_dim}, got {len(item['cve_embedding'])}")
+                f"Embedding dimension mismatch at index {i}: expected {expected_dim}, got {len(item['cve_embedding'])}"
+            )
 
     try:
         client.insert(collection_name=consts.MILVUS_COLLECTION_NAME, data=data)
-        print(f"✅ Successfully inserted {len(data)} records into {consts.MILVUS_COLLECTION_NAME}")
+        print(
+            f"✅ Successfully inserted {len(data)} records into {consts.MILVUS_COLLECTION_NAME}"
+        )
     except Exception as e:
-        print(f"❌ Error inserting into collection {consts.MILVUS_COLLECTION_NAME}:\n{e}")
+        print(
+            f"❌ Error inserting into collection {consts.MILVUS_COLLECTION_NAME}:\n{e}"
+        )

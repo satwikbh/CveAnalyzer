@@ -25,8 +25,11 @@ def get_groq_client():
 @observe()
 def extract_info_via_llm(query: str, llm_client) -> dict:
     llm_prompt = prompts.user_query_llm_prompt(query=query)
-    response = llm_client.chat.completions.create(model="llama3-8b-8192",  # Or "phi-3-mini-128k" for fallback
-                                                  messages=[{"role": "user", "content": llm_prompt}], temperature=0.2, )
+    response = llm_client.chat.completions.create(
+        model="llama3-8b-8192",  # Or "phi-3-mini-128k" for fallback
+        messages=[{"role": "user", "content": llm_prompt}],
+        temperature=0.2,
+    )
     try:
         content = response.choices[0].message.content.strip()
         print("🧠 Extract Info - LLM response:\n", content)
@@ -46,8 +49,11 @@ Description:
 
 Respond in bullet points.
 """
-    response = llm_client.chat.completions.create(model="llama3-8b-8192",
-                                                  messages=[{"role": "user", "content": prompt}], temperature=0.3, )
+    response = llm_client.chat.completions.create(
+        model="llama3-8b-8192",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+    )
     try:
         content = response.choices[0].message.content.strip()
         print("🧠 Prompting - LLM response:\n", content)

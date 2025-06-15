@@ -36,7 +36,9 @@ def search_and_generate(state: CVEQueryState) -> CVEQueryState:
         result_entry = exact_result[0] if exact_result else None
 
         if not result_entry:
-            vector_result = search_vector_embedding(state["query"], milvus_client, groq_client)
+            vector_result = search_vector_embedding(
+                state["query"], milvus_client, groq_client
+            )
             result_entry = vector_result if vector_result else None
 
         if not result_entry:
