@@ -153,7 +153,7 @@ streamlit run streamlit_app.py || python -m streamlit run src/ui/streamlit_app.p
 
 ## 📫 Contact
 
-**[Your Name]**
+**[Satwik]**
 🔗 [LinkedIn](https://linkedin.com/in/satwikbh)
 🐙 [GitHub](https://github.com/satwikbh)
 
